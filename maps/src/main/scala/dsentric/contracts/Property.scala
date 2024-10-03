@@ -60,7 +60,7 @@ final class ExpectedProperty[D <: DObject, T] private[contracts] (
   private[contracts] val __nameOverride: Option[String],
   val _parent: BaseContract[D],
   val _codec: DCodec[T],
-  val _dataOperators: List[DataOperator[T] with Expected]
+  val _dataOperators: List[DataOperator[T] & Expected]
 ) extends ValueProperty[D, T]
     with PropertyResolver[D, T]
     with ExpectedLens[D, T]
@@ -69,7 +69,7 @@ final class MaybeExpectedProperty[D <: DObject, T] private[contracts] (
   private[contracts] val __nameOverride: Option[String],
   val _parent: BaseContract[D],
   val _codec: DCodec[T],
-  val _dataOperators: List[DataOperator[T] with Expected]
+  val _dataOperators: List[DataOperator[T] & Expected]
 ) extends ValueProperty[D, T]
     with PropertyResolver[D, T]
     with MaybeExpectedLens[D, T]
@@ -78,7 +78,7 @@ final class MaybeProperty[D <: DObject, T] private[contracts] (
   private[contracts] val __nameOverride: Option[String],
   val _parent: BaseContract[D],
   val _codec: DCodec[T],
-  val _dataOperators: List[DataOperator[T] with Optional]
+  val _dataOperators: List[DataOperator[T] & Optional]
 ) extends ValueProperty[D, T]
     with PropertyResolver[D, T]
     with MaybeLens[D, T]
@@ -88,7 +88,7 @@ final class DefaultProperty[D <: DObject, T] private[contracts] (
   val _default: T,
   val _parent: BaseContract[D],
   val _codec: DCodec[T],
-  val _dataOperators: List[DataOperator[T] with Optional]
+  val _dataOperators: List[DataOperator[T] & Optional]
 ) extends ValueProperty[D, T]
     with PropertyResolver[D, T]
     with DefaultLens[D, T]
@@ -98,7 +98,7 @@ final class MaybeDefaultProperty[D <: DObject, T] private[contracts] (
   val _default: T,
   val _parent: BaseContract[D],
   val _codec: DCodec[T],
-  val _dataOperators: List[DataOperator[T] with Optional]
+  val _dataOperators: List[DataOperator[T] & Optional]
 ) extends ValueProperty[D, T]
     with PropertyResolver[D, T]
     with MaybeDefaultLens[D, T]
@@ -110,7 +110,7 @@ trait ExpectedObjectProperty[D <: DObject]
     with ExpectedPropertyOps[D]
     with SubContractFor[D] {
 
-  def _dataOperators: List[DataOperator[DObject] with Expected]
+  def _dataOperators: List[DataOperator[DObject] & Expected]
 
 }
 
@@ -121,7 +121,7 @@ trait MaybeExpectedObjectProperty[D <: DObject]
     with MaybeExpectedPropertyOps[D]
     with BaseContract[D] {
   override protected def __self: BaseContract[D] = this
-  def _dataOperators: List[DataOperator[DObject] with Expected]
+  def _dataOperators: List[DataOperator[DObject] & Expected]
 }
 
 trait MaybeObjectProperty[D <: DObject]
@@ -132,7 +132,7 @@ trait MaybeObjectProperty[D <: DObject]
     with BaseContract[D] {
 
   override protected def __self: BaseContract[D] = this
-  def _dataOperators: List[DataOperator[DObject] with Optional]
+  def _dataOperators: List[DataOperator[DObject] & Optional]
 }
 
 case class DynamicProperty[D <: DObject, T](
@@ -163,11 +163,11 @@ sealed trait AspectProperty[D <: DObject, T <: Any] extends Property[D, T]      
 }
 sealed trait ValueAspectProperty[D <: DObject, T]   extends AspectProperty[D, T] with ValueProperty[D, T]
 sealed trait ObjectAspectProperty[D <: DObject]     extends AspectProperty[D, DObject] with ObjectProperty[D] {
-  private var __fields: Map[String, AspectProperty[D, _]] = _
+  private var __fields: Map[String, AspectProperty[D, ?]] = _
   private var __key: String                               = _
   private var _bitmap1: Boolean                           = false
 
-  def _fields: Map[String, AspectProperty[D, _]] = __fields
+  def _fields: Map[String, AspectProperty[D, ?]] = __fields
   def _key: String                               =
     if (_bitmap1) __key
     else {
@@ -175,7 +175,7 @@ sealed trait ObjectAspectProperty[D <: DObject]     extends AspectProperty[D, DO
       __key
     }
 
-  private[contracts] def __setFields(fields: Map[String, AspectProperty[D, _]]): Unit =
+  private[contracts] def __setFields(fields: Map[String, AspectProperty[D, ?]]): Unit =
     __fields = fields
   private[contracts] def __setKey(key: String): Unit = {
     _bitmap1 = true
@@ -184,38 +184,38 @@ sealed trait ObjectAspectProperty[D <: DObject]     extends AspectProperty[D, DO
 
 }
 
-final case class ExpectedAspectProperty[D <: DObject, T] private[contracts] (
+final case class ExpectedAspectProperty[D <: DObject, T](
   _key: String,
   _codec: DCodec[T],
   _dataOperators: List[DataOperator[T]]
 ) extends ValueAspectProperty[D, T]
     with ExpectedLens[D, T]
 
-final case class MaybeAspectProperty[D <: DObject, T] private[contracts] (
+final case class MaybeAspectProperty[D <: DObject, T](
   _key: String,
   _codec: DCodec[T],
-  _dataOperators: List[DataOperator[T] with Optional]
+  _dataOperators: List[DataOperator[T] & Optional]
 ) extends ValueAspectProperty[D, T]
     with MaybeLens[D, T]
 
-final case class DefaultAspectProperty[D <: DObject, T] private[contracts] (
+final case class DefaultAspectProperty[D <: DObject, T](
   _key: String,
   _default: T,
   _codec: DCodec[T],
-  _dataOperators: List[DataOperator[T] with Optional]
+  _dataOperators: List[DataOperator[T] & Optional]
 ) extends ValueAspectProperty[D, T]
     with DefaultLens[D, T]
 
-sealed class ExpectedObjectAspectProperty[D <: DObject] private[contracts] (
+sealed class ExpectedObjectAspectProperty[D <: DObject](
   val _codec: DCodec[DObject],
-  val _dataOperators: List[DataOperator[DObject] with Expected]
+  val _dataOperators: List[DataOperator[DObject] & Expected]
 ) extends ObjectAspectProperty[D]
     with ExpectedObjectProperty[D] {}
 
-final class ExpectedObjectAspectPropertyWithAdditional[D <: DObject, Key, Value] private[contracts] (
+final class ExpectedObjectAspectPropertyWithAdditional[D <: DObject, Key, Value](
   override val _codec: DCodec[DObject],
-  override val _dataOperators: List[DataOperator[DObject] with Expected],
-  val _additionalDataOperators: List[DataOperator[Map[Key, Value]] with Optional],
+  override val _dataOperators: List[DataOperator[DObject] & Expected],
+  val _additionalDataOperators: List[DataOperator[Map[Key, Value]] & Optional],
   val _additionalKeyCodec: DStringCodec[Key],
   val _additionalValueCodec: DCodec[Value]
 ) extends ExpectedObjectAspectProperty[D](_codec, _dataOperators)
@@ -234,16 +234,16 @@ object ExpectedObjectAspectProperty {
 //  }
 
   def apply[D <: DObject](
-    objectProperty: ObjectProperty[_],
-    _dataOperators: List[DataOperator[DObject] with Expected]
+    objectProperty: ObjectProperty[?],
+    _dataOperators: List[DataOperator[DObject] & Expected]
   ): ExpectedObjectAspectProperty[D] = {
     val property =
       objectProperty match {
-        case a: AdditionalProperties[_, _] =>
+        case a: AdditionalProperties[?, ?] =>
           new ExpectedObjectAspectPropertyWithAdditional[D, Any, Any](
             objectProperty._codec,
             _dataOperators,
-            a._additionalDataOperators.asInstanceOf[List[DataOperator[Map[Any, Any]] with Optional]],
+            a._additionalDataOperators.asInstanceOf[List[DataOperator[Map[Any, Any]] & Optional]],
             a._additionalKeyCodec.asInstanceOf[DStringCodec[Any]],
             a._additionalValueCodec.asInstanceOf[DCodec[Any]]
           )
@@ -255,9 +255,9 @@ object ExpectedObjectAspectProperty {
   }
 
   def apply[D <: DObject](
-    objectProperty: ObjectProperty[_],
-    _fields: Map[String, AspectProperty[D, _]],
-    _dataOperators: List[DataOperator[DObject] with Expected]
+    objectProperty: ObjectProperty[?],
+    _fields: Map[String, AspectProperty[D, ?]],
+    _dataOperators: List[DataOperator[DObject] & Expected]
   ): ExpectedObjectAspectProperty[D] = {
     val p = apply[D](objectProperty, _dataOperators)
     p.__setFields(_fields)
@@ -267,14 +267,14 @@ object ExpectedObjectAspectProperty {
 
 sealed class MaybeObjectAspectProperty[D <: DObject] private[contracts] (
   val _codec: DCodec[DObject],
-  val _dataOperators: List[DataOperator[DObject] with Optional]
+  val _dataOperators: List[DataOperator[DObject] & Optional]
 ) extends ObjectAspectProperty[D]
     with MaybeObjectProperty[D]
 
 final class MaybeObjectAspectPropertyWithAdditional[D <: DObject, Key, Value] private[contracts] (
   override val _codec: DCodec[DObject],
-  override val _dataOperators: List[DataOperator[DObject] with Optional],
-  val _additionalDataOperators: List[DataOperator[Map[Key, Value]] with Optional],
+  override val _dataOperators: List[DataOperator[DObject] & Optional],
+  val _additionalDataOperators: List[DataOperator[Map[Key, Value]] & Optional],
   val _additionalKeyCodec: DStringCodec[Key],
   val _additionalValueCodec: DCodec[Value]
 ) extends MaybeObjectAspectProperty[D](_codec, _dataOperators)
@@ -283,15 +283,15 @@ final class MaybeObjectAspectPropertyWithAdditional[D <: DObject, Key, Value] pr
 object MaybeObjectAspectProperty {
 
   def apply[D <: DObject](
-    objectProperty: ObjectProperty[_],
-    _dataOperators: List[DataOperator[DObject] with Optional]
+    objectProperty: ObjectProperty[?],
+    _dataOperators: List[DataOperator[DObject] & Optional]
   ): MaybeObjectAspectProperty[D] = {
     val property = objectProperty match {
-      case a: AdditionalProperties[_, _] =>
+      case a: AdditionalProperties[?, ?] =>
         new MaybeObjectAspectPropertyWithAdditional[D, Any, Any](
           objectProperty._codec,
           _dataOperators,
-          a._additionalDataOperators.asInstanceOf[List[DataOperator[Map[Any, Any]] with Optional]],
+          a._additionalDataOperators.asInstanceOf[List[DataOperator[Map[Any, Any]] & Optional]],
           a._additionalKeyCodec.asInstanceOf[DStringCodec[Any]],
           a._additionalValueCodec.asInstanceOf[DCodec[Any]]
         )
@@ -303,9 +303,9 @@ object MaybeObjectAspectProperty {
   }
 
   def apply[D <: DObject](
-    objectProperty: ObjectProperty[_],
-    _fields: Map[String, AspectProperty[D, _]],
-    _dataOperators: List[DataOperator[DObject] with Optional]
+    objectProperty: ObjectProperty[?],
+    _fields: Map[String, AspectProperty[D, ?]],
+    _dataOperators: List[DataOperator[DObject] & Optional]
   ): MaybeObjectAspectProperty[D] = {
     val p = apply[D](objectProperty, _dataOperators)
     p.__setFields(_fields)
@@ -331,45 +331,41 @@ object ObjectProperty {
 object ExpectedProperty {
   def unapply[D <: DObject, T <: Any](
     p: ExpectedProperty[D, T]
-  ): Some[(Path, DCodec[T], List[DataOperator[T] with Expected])] =
+  ): Some[(Path, DCodec[T], List[DataOperator[T] & Expected])] =
     Some((p._path, p._codec, p._dataOperators))
 
   def unapply[D <: DObject, T <: Any](
     p: MaybeExpectedProperty[D, T]
-  ): Some[(Path, DCodec[T], List[DataOperator[T] with Expected])] =
+  ): Some[(Path, DCodec[T], List[DataOperator[T] & Expected])] =
     Some((p._path, p._codec, p._dataOperators))
 }
 
 object MaybeProperty {
-  def unapply[D <: DObject, T <: Any](
-    p: MaybeProperty[D, T]
-  ): Some[(Path, DCodec[T], List[DataOperator[T] with Optional])] =
+  def unapply[D <: DObject, T <: Any](p: MaybeProperty[D, T]): Some[(Path, DCodec[T], List[DataOperator[T] & Optional])] =
     Some((p._path, p._codec, p._dataOperators))
 }
 
 object DefaultProperty {
   def unapply[D <: DObject, T <: Any](
     p: DefaultProperty[D, T]
-  ): Some[(Path, DCodec[T], T, List[DataOperator[T] with Optional])] =
+  ): Some[(Path, DCodec[T], T, List[DataOperator[T] & Optional])] =
     Some((p._path, p._codec, p._default, p._dataOperators))
 
   def unapply[D <: DObject, T <: Any](
     p: MaybeDefaultProperty[D, T]
-  ): Some[(Path, DCodec[T], T, List[DataOperator[T] with Optional])] =
+  ): Some[(Path, DCodec[T], T, List[DataOperator[T] & Optional])] =
     Some((p._path, p._codec, p._default, p._dataOperators))
 }
 
 object ExpectedObjectProperty {
-  def unapply[D <: DObject](p: ExpectedObjectProperty[D]): Some[(Path, List[DataOperator[DObject] with Expected])] =
+  def unapply[D <: DObject](p: ExpectedObjectProperty[D]): Some[(Path, List[DataOperator[DObject] & Expected])] =
     Some((p._path, p._dataOperators))
 
-  def unapply[D <: DObject](
-    p: MaybeExpectedObjectProperty[D]
-  ): Some[(Path, List[DataOperator[DObject] with Expected])] =
+  def unapply[D <: DObject](p: MaybeExpectedObjectProperty[D]): Some[(Path, List[DataOperator[DObject] & Expected])] =
     Some((p._path, p._dataOperators))
 }
 
 object MaybeObjectProperty {
-  def unapply[D <: DObject](p: MaybeObjectProperty[D]): Some[(Path, List[DataOperator[DObject] with Optional])] =
+  def unapply[D <: DObject](p: MaybeObjectProperty[D]): Some[(Path, List[DataOperator[DObject] & Optional])] =
     Some((p._path, p._dataOperators))
 }

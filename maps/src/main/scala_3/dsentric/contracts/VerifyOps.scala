@@ -51,23 +51,23 @@ private[dsentric] trait VerifyOps {
   ): Function[(DCodec[C], Raw), List[Failure]]                                                = {
     case (d: DValueCodec[C], raw)                                                =>
       verifyValue(contract, path, d, raw)
-    case (d: DMapCodec[C, _, _], rawObject: RawObject @unchecked)                =>
+    case (d: DMapCodec[C, ?, ?], rawObject: RawObject @unchecked)                =>
       verifyMap(contract, path, d, rawObject)
-    case (d: DCollectionCodec[C, _], rawArray: RawArray @unchecked)              =>
+    case (d: DCollectionCodec[C, ?], rawArray: RawArray @unchecked)              =>
       verifyCollection(contract, path, d, rawArray)
-    case (d: DContractCodec[_], rawObject: RawObject @unchecked)                 =>
+    case (d: DContractCodec[?], rawObject: RawObject @unchecked)                 =>
       verifyContract(contract, path, d.contract, rawObject)
-    case (d: DParameterisedContractCodec[_], rawObject: RawObject @unchecked)    =>
+    case (d: DParameterisedContractCodec[?], rawObject: RawObject @unchecked)    =>
       verifyParameterisedContract(contract, path, d, rawObject)
-    case (d: DKeyContractCollectionCodec[C, _], rawObject: RawObject @unchecked) =>
+    case (d: DKeyContractCollectionCodec[C, ?], rawObject: RawObject @unchecked) =>
       verifyKeyContractCollection(contract, path, d, rawObject)
-    case (d: DValueClassCodec[C, _], raw)                                        =>
+    case (d: DValueClassCodec[C, ?], raw)                                        =>
       verifyValueClass(contract, path, d, raw)
-    case (d: DProductCodec[C, _, _], rawArray: RawArray @unchecked)              =>
+    case (d: DProductCodec[C, ?, ?], rawArray: RawArray @unchecked)              =>
       verifyProduct(contract, path, d, rawArray)
-    case (d: DCoproductCodec[C, _], raw)                                         =>
+    case (d: DCoproductCodec[C, ?], raw)                                         =>
       verifyCoproduct(contract, path, d, raw)
-    case (d: DTypeContractCodec[_], rawObject: RawObject @unchecked)             =>
+    case (d: DTypeContractCodec[?], rawObject: RawObject @unchecked)             =>
       verifyTypeContract(contract, path, d.contracts, d.cstr, rawObject)
     case (d, raw)                                                                =>
       List(IncorrectTypeFailure(contract, path, d, raw))

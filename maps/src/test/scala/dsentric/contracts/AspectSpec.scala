@@ -7,8 +7,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 class AspectSpec extends AnyFunSpec with Matchers with EitherValues {
-  import dsentric.codecs.std.DCodecs._
-  import dsentric.Dsentric._
+  import dsentric.codecs.std.DCodecs.*
+  import dsentric.Dsentric.*
 
   trait Parent extends DObject
   trait Child  extends Parent
@@ -38,9 +38,10 @@ class AspectSpec extends AnyFunSpec with Matchers with EitherValues {
   }
 
   describe("Aspect structure") {
-    import DAspectSyntax._
-    val f: PartialFunction[Property[DObject, _], Option[AspectProperty[DObject, _]]] = {
-      case p: ValueProperty[DObject, _] =>
+    import DAspectSyntax.*
+
+    val f: PartialFunction[Property[DObject, ?], Option[AspectProperty[DObject, ?]]] = {
+      case p: ValueProperty[DObject, ?] =>
         Some(p.$asExpected())
     }
     lazy val a                                                                       =
@@ -52,9 +53,10 @@ class AspectSpec extends AnyFunSpec with Matchers with EitherValues {
     }
   }
   describe("Child structure") {
-    import DAspectSyntax._
-    val f: PartialFunction[Property[Parent, _], Option[AspectProperty[Child, _]]] = {
-      case p: ValueProperty[Parent, _] =>
+    import DAspectSyntax.*
+
+    val f: PartialFunction[Property[Parent, ?], Option[AspectProperty[Child, ?]]] = {
+      case p: ValueProperty[Parent, ?] =>
         Some(p.$asExpected())
     }
     lazy val a                                                                    =
@@ -71,11 +73,12 @@ class AspectSpec extends AnyFunSpec with Matchers with EitherValues {
     }
   }
   describe("Nested structure") {
-    import DAspectSyntax._
+    import DAspectSyntax.*
+
     val a =
       new Aspect(Nested)() {
         val nested = \\(Nested.nested) {
-          case p: ValueProperty[DObject, _] if p._path.tailKeyOption.contains("property1") =>
+          case p: ValueProperty[DObject, ?] if p._path.tailKeyOption.contains("property1") =>
             Some(p.$asMaybe())
         }
       }

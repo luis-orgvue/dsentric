@@ -157,7 +157,7 @@ final case class PathIndex(index: Int, next: Path) extends Path {
 }
 
 object Path {
-  type Mix = Int with String
+  type Mix = Int & String
   val empty: Path = PathEnd
 
   def apply[T >: Mix](s: T*): Path =

@@ -6,7 +6,7 @@ lazy val buildSettings = Seq(
   version := "1.3.1",
   scalacOptions ++= (scalaPartV.value match {
     case Some((3, _)) =>
-      Seq("-language:postfixOps", "-language:reflectiveCalls", "-language:existentials")
+      Seq("-language:postfixOps", "-language:reflectiveCalls", "-language:existentials", "-Xkind-projector", "-explain")
     case _            =>
       Seq(
         "-deprecation",
@@ -22,6 +22,12 @@ lazy val buildSettings = Seq(
         "-Ywarn-value-discard",
         "-Xsource:3"
       )
+  }),
+  scalacOptions --= (scalaPartV.value match {
+    case Some((3, _)) =>
+      Seq("-Ykind-projector", "-Xfatal-warnings")
+    case _            =>
+      Seq()
   }),
   resolvers ++= Seq(
     DefaultMavenRepository,
@@ -62,13 +68,14 @@ def scalaPartV =
 
 releaseUseGlobalVersion := false
 
-lazy val reflect      = "org.scala-lang"     % "scala-reflect"  % "2.13.8"
-lazy val staging      = "org.scala-lang"    %% "scala3-staging" % "3.3.1"
-lazy val shapeless    = "com.chuusai"       %% "shapeless"      % "2.3.3"
-lazy val scalatest    = "org.scalatest"     %% "scalatest"      % "3.2.10" % "test"
-lazy val cats         = "org.typelevel"     %% "cats-core"      % "2.8.0"
-lazy val commons_math = "org.apache.commons" % "commons-math3"  % "3.6.1"
-lazy val silencer     = "com.github.ghik"    % "silencer-lib"   % "1.7.11" % Provided cross CrossVersion.full
+lazy val reflect      = "org.scala-lang"     % "scala-reflect"   % "2.13.8"
+lazy val staging      = "org.scala-lang"    %% "scala3-staging"  % "3.5.0-RC6"
+lazy val shapeless    = "com.chuusai"       %% "shapeless"       % "2.3.3"
+lazy val scalatest    = "org.scalatest"     %% "scalatest"       % "3.2.10" % "test"
+lazy val cats         = "org.typelevel"     %% "cats-core"       % "2.8.0"
+lazy val commons_math = "org.apache.commons" % "commons-math3"   % "3.6.1"
+lazy val silencer     = "com.github.ghik"    % "silencer-lib"    % "1.7.11" % Provided cross CrossVersion.full
+lazy val shapeless3   = "com.orgvue"        %% "shapeless3-core" % "0.1.0"
 
 lazy val settings = buildSettings
 
@@ -81,19 +88,19 @@ lazy val core = project
     case _            =>
       Seq(reflect, shapeless, scalatest, commons_math)
   }))
-  .settings(crossScalaVersions := Seq("2.13.8", "3.3.1"))
+  .settings(crossScalaVersions := Seq("2.13.8", "3.5.0-RC6"))
 
 lazy val maps = project
   .settings(moduleName := "dsentric-maps")
   .settings(settings)
   .settings(libraryDependencies ++= (scalaPartV.value match {
     case Some((3, _)) =>
-      Seq(scalatest, cats, staging)
+      Seq(shapeless3, scalatest, cats, staging)
     case _            =>
       Seq(reflect, shapeless, scalatest, cats, silencer)
   }))
   .dependsOn(core, core % "test -> test")
-  .settings(crossScalaVersions := Seq("2.13.8", "3.3.1"))
+  .settings(crossScalaVersions := Seq("2.13.8", "3.5.0-RC6"))
 
 lazy val macros = project
   .settings(moduleName := "dsentric-macros")

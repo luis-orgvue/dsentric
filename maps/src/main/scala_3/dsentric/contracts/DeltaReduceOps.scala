@@ -143,18 +143,18 @@ private[contracts] trait DeltaReduceOps extends ReduceOps {
       DeltaRemove
     case (d: DValueCodec[C], delta, current)                                              =>
       deltaReduceValue(contract, path, badTypes, d, delta, current)
-    case (d: DMapCodec[C, _, _], deltaObject: RawObject @unchecked, current: Raw)         =>
+    case (d: DMapCodec[C, ?, ?], deltaObject: RawObject @unchecked, current: Raw)         =>
       deltaReduceMap(contract, path, badTypes, d, deltaObject, current)
-    case (d: DCollectionCodec[C, _], deltaArray: RawArray @unchecked, current: Raw)       =>
+    case (d: DCollectionCodec[C, ?], deltaArray: RawArray @unchecked, current: Raw)       =>
       available2DeltaReduce(reduceCollection(contract, path, badTypes, d, deltaArray)) match {
         case DeltaReduced(dr) if dr == current =>
           DeltaEmpty
         case d                                 =>
           d
       }
-    case (d: DContractCodec[_], rawObject: RawObject @unchecked, current)                 =>
+    case (d: DContractCodec[?], rawObject: RawObject @unchecked, current)                 =>
       deltaReduceContract(contract, path, badTypes, d.contract, rawObject, current)
-    case (d: DParameterisedContractCodec[_], rawObject: RawObject @unchecked, current)    =>
+    case (d: DParameterisedContractCodec[?], rawObject: RawObject @unchecked, current)    =>
       deltaReduceParameterisedContract(contract, path, badTypes, d, rawObject, current)
     case (d: DKeyContractCollectionCodec[C, _], rawObject: RawObject @unchecked, current) =>
       deltaReduceKeyContractCollection(contract, path, badTypes, d, rawObject, current)
@@ -167,9 +167,9 @@ private[contracts] trait DeltaReduceOps extends ReduceOps {
         case d                                 =>
           d
       }
-    case (d: DCoproductCodec[C, _], raw, current)                                         =>
+    case (d: DCoproductCodec[C, ?], raw, current)                                         =>
       deltaReduceCoproduct(contract, path, badTypes, d, raw, current)
-    case (d: DTypeContractCodec[_], rawObject: RawObject @unchecked, current)             =>
+    case (d: DTypeContractCodec[?], rawObject: RawObject @unchecked, current)             =>
       deltaReduceTypeContract(contract, path, badTypes, d.contracts, d.cstr, rawObject, current)
     case _ if badTypes == DropBadTypes                                                    =>
       DeltaEmpty

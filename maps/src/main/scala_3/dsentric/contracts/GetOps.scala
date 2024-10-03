@@ -92,27 +92,27 @@ private[contracts] trait GetOps {
   ): Function[(DCodec[C], Raw), Available[C]] = {
     case (d: DValueCodec[C], raw)                                                =>
       getValue(contract, path, badTypes, d, raw)
-    case (d: DMapCodec[C, _, _], rawObject: RawObject @unchecked)                =>
+    case (d: DMapCodec[C, ?, ?], rawObject: RawObject @unchecked)                =>
       getMap(contract, path, badTypes, setDefaultValues, d, rawObject)
-    case (d: DCollectionCodec[C, _], rawArray: RawArray @unchecked)              =>
+    case (d: DCollectionCodec[C, ?], rawArray: RawArray @unchecked)              =>
       getCollection(contract, path, badTypes, setDefaultValues, d, rawArray)
-    case (d: DContractCodec[_], rawObject: RawObject @unchecked)                 =>
+    case (d: DContractCodec[?], rawObject: RawObject @unchecked)                 =>
       getContract(contract, path, badTypes, setDefaultValues, d.contract, d.cstr, rawObject)
         .asInstanceOf[Available[C]]
-    case (d: DParameterisedContractCodec[_], rawObject: RawObject @unchecked)    =>
+    case (d: DParameterisedContractCodec[?], rawObject: RawObject @unchecked)    =>
       getParameterisedContract(contract, path, badTypes, setDefaultValues, d, rawObject)
         .asInstanceOf[Available[C]]
-    case (d: DKeyContractCollectionCodec[C, _], rawObject: RawObject @unchecked) =>
+    case (d: DKeyContractCollectionCodec[C, ?], rawObject: RawObject @unchecked) =>
       getKeyContractCollection(contract, path, badTypes, setDefaultValues, d, rawObject)
         .asInstanceOf[Available[C]]
-    case (d: DTypeContractCodec[_], rawObject: RawObject @unchecked)             =>
+    case (d: DTypeContractCodec[?], rawObject: RawObject @unchecked)             =>
       getTypeContract(contract, path, badTypes, setDefaultValues, d.contracts, d.cstr, rawObject)
         .asInstanceOf[Available[C]]
-    case (d: DValueClassCodec[C, _], raw)                                        =>
+    case (d: DValueClassCodec[C, ?], raw)                                        =>
       getValueClass(contract, path, badTypes, setDefaultValues, d, raw)
-    case (d: DProductCodec[C, _, _], rawArray: RawArray @unchecked)              =>
+    case (d: DProductCodec[C, ?, ?], rawArray: RawArray @unchecked)              =>
       getProduct(contract, path, badTypes, setDefaultValues, d, rawArray)
-    case (d: DCoproductCodec[C, _], raw)                                         =>
+    case (d: DCoproductCodec[C, ?], raw)                                         =>
       getCoproduct(contract, path, badTypes, setDefaultValues, d, raw)
     case _ if badTypes == DropBadTypes                                           =>
       NotFound

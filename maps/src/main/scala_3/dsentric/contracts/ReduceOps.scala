@@ -103,23 +103,23 @@ private[contracts] trait ReduceOps {
       NotFound
     case (d: DValueCodec[C], raw)                                                     =>
       reduceValue(contract, path, badTypes, d, raw)
-    case (d: DMapCodec[C, _, _], rawObject: RawObject @unchecked)                     =>
+    case (d: DMapCodec[C, ?, ?], rawObject: RawObject @unchecked)                     =>
       reduceMap(contract, path, badTypes, d, rawObject)
-    case (d: DCollectionCodec[C, _], rawArray: RawArray @unchecked)                   =>
+    case (d: DCollectionCodec[C, ?], rawArray: RawArray @unchecked)                   =>
       reduceCollection(contract, path, badTypes, d, rawArray)
-    case (d: DContractCodec[_], rawObject: RawObject @unchecked)                      =>
+    case (d: DContractCodec[?], rawObject: RawObject @unchecked)                      =>
       reduceContract(contract, path, badTypes, d.contract, rawObject)
-    case (d: DParameterisedContractCodec[_], rawObject: RawObject @unchecked)         =>
+    case (d: DParameterisedContractCodec[?], rawObject: RawObject @unchecked)         =>
       reduceParameterisedContract(contract, path, badTypes, d, rawObject)
-    case (d: DKeyContractCollectionCodec[C, _], rawObject: RawObject @unchecked)      =>
+    case (d: DKeyContractCollectionCodec[C, ?], rawObject: RawObject @unchecked)      =>
       reduceKeyContractCollection(contract, path, badTypes, d, rawObject)
-    case (d: DValueClassCodec[C, _], raw)                                             =>
+    case (d: DValueClassCodec[C, ?], raw)                                             =>
       reduceValueClass(contract, path, badTypes, d, raw)
-    case (d: DProductCodec[C, _, _], rawArray: RawArray @unchecked)                   =>
+    case (d: DProductCodec[C, ?, ?], rawArray: RawArray @unchecked)                   =>
       reduceProduct(contract, path, badTypes, d, rawArray)
-    case (d: DCoproductCodec[C, _], raw)                                              =>
+    case (d: DCoproductCodec[C, ?], raw)                                              =>
       reduceCoproduct(contract, path, badTypes, d, raw)
-    case (d: DTypeContractCodec[_], rawObject: RawObject @unchecked)                  =>
+    case (d: DTypeContractCodec[?], rawObject: RawObject @unchecked)                  =>
       reduceTypeContract(contract, path, badTypes, d.contracts, d.cstr, rawObject)
     case _ if badTypes == DropBadTypes                                                =>
       NotFound

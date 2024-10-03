@@ -6,6 +6,8 @@ import dsentric.contracts.*
 import dsentric.operators.Internal
 import dsentric.meta.TypeTag
 
+import scala.reflect.ClassTag
+
 object Definition {
   type Definitions = Vector[ObjectDefinition]
   type Infos       = Vector[ContractInfo]
@@ -18,7 +20,7 @@ object Definition {
     infos: Infos,
     defs: Definitions,
     forceNested: Boolean = false
-  )(using typeTag: TypeTag[C]): (String, Infos, Definitions) = {
+  )(using typeTag: TypeTag[C], classTag: ClassTag[C]): (String, Infos, Definitions) = {
     val name = contractName(contract)
     defs
       .find(_.definition.contains(name))
@@ -31,20 +33,20 @@ object Definition {
       }
   }
 
-  def nestedContractObjectDefinition[D <: DObject, C <: BaseContract[D]](contract: C)(using typeTag: TypeTag[C]): ObjectDefinition = {
+  def nestedContractObjectDefinition[D <: DObject, C <: BaseContract[D]](contract: C)(using typeTag: TypeTag[C], classTag: ClassTag[C]): ObjectDefinition = {
     val (contractInfo, infos) = SchemaReflection.getContractInfo(contract, Vector.empty)(using typeTag)
     val (c, _, _)             = baseContractObjectDefinition(contract._fields, contract, contractInfo, infos, Vector.empty, true)
     c
   }
 
-  def contractObjectDefinitions[D <: DObject, C <: BaseContract[D]](contract: C)(using typeTag: TypeTag[C]): (ObjectDefinition, Definitions) = {
+  def contractObjectDefinitions[D <: DObject, C <: BaseContract[D]](contract: C)(using typeTag: TypeTag[C], classTag: ClassTag[C]): (ObjectDefinition, Definitions) = {
     val (contractInfo, newInfos) = SchemaReflection.getContractInfo(contract, Vector.empty)(using typeTag)
     val (c, _, d)                = baseContractObjectDefinition(contract._fields, contract, contractInfo, newInfos, Vector.empty, false)
     c -> d
   }
 
   private def baseContractObjectDefinition[D <: DObject](
-    fields: Map[String, Property[D, _]],
+    fields: Map[String, Property[D, ?]],
     contract: BaseContract[D],
     contractInfo: ContractInfo,
     infos: Infos,
@@ -71,7 +73,7 @@ object Definition {
   }
 
   private def contractPropertyDefinitions[D <: DObject](
-    properties: Iterable[(String, Property[D, _], SchemaAnnotations)],
+    properties: Iterable[(String, Property[D, ?], SchemaAnnotations)],
     infos: Infos,
     defs: Definitions,
     forceNested: Boolean
@@ -80,9 +82,7 @@ object Definition {
       .foldLeft((Set.empty[PropertyDefinition], infos, defs)) {
         case (a, (_, prop, _)) if skipProperty(prop) =>
           a
-        //Nested, display all properties
-        case ((p, infos0, defs0), (name, b: BaseContract[D] @unchecked with Property[D, _], schema))
-            if schema.nested || forceNested =>
+        case ((p, infos0, defs0), (name, b: (BaseContract[D]  & Property[D, ?]) @unchecked, schema)) if schema.nested || forceNested =>
           val (objectDefinition, infos1, defs1) = resolveNestedContract(b, infos0, defs0, forceNested)
           val resolvedDefinition                = resolveDataOperators(b, objectDefinition)
           val property                          = PropertyDefinition(
@@ -94,8 +94,7 @@ object Definition {
             schema.description
           )
           (p + property, infos1, defs1)
-
-        case ((p, infos0, defs0), (name, b: BaseContract[D] @unchecked with Property[D, _], schema)) =>
+        case ((p, infos0, defs0), (name, b: (BaseContract[D] & Property[D, ?]) @unchecked, schema)) =>
           val (bInfo, infos1) = SchemaReflection.getContractInfo(b, infos0)
           //Internal object is a single type inheritance
           if (bInfo.inherits.size == 1 && bInfo.fields.isEmpty && b._dataOperators.isEmpty) {
@@ -155,14 +154,13 @@ object Definition {
           (p + property, infos, defs)
       }
 
-  //TODO work out schema override
   private def resolveNestedContract[D <: DObject](
     contract: BaseContract[D],
     infos: Infos,
     defs: Definitions,
     forceNested: Boolean
   ): (ObjectDefinition, Infos, Definitions) = {
-    val (bInfo, infos1)                        = SchemaReflection.getContractInfo(contract, infos)(using TypeTag.ofClass(contract.getClass.asInstanceOf[Class[BaseContract[D]]]))
+    val (bInfo, infos1)                        = SchemaReflection.getContractInfo(contract, infos)
     val subProperties                          = findPropertyAnnotations(contract._fields, bInfo, true)
     val (subPropertyDefs, infos2, defs1)       = contractPropertyDefinitions(subProperties, infos1, defs, forceNested)
     val (additional, propNames, infos3, defs2) = additionalPropertiesDefinition(contract, infos2, defs1)
@@ -180,24 +178,24 @@ object Definition {
     (objectDefinition, infos3, defs2)
   }
 
-  private def resolveDataOperators[D <: DObject, T <: TypeDefinition](property: Property[D, _], typeDef: T): T =
+  private def resolveDataOperators[D <: DObject, T <: TypeDefinition](property: Property[D, ?], typeDef: T): T =
     property._dataOperators.foldLeft(typeDef)((a, d) => d.definition.lift(a).getOrElse(a))
 
-  private def getDefault[D <: DObject](p: Property[D, _]): Option[Any] =
+  private def getDefault[D <: DObject](p: Property[D, ?]): Option[Any] =
     p match {
-      case d: DefaultProperty[_, Any] @unchecked =>
+      case d: DefaultProperty[?, Any] @unchecked =>
         Some(d._codec(d._default))
       case _                                     => None
     }
 
-  private def skipProperty[D <: DObject](p: Property[D, _]): Boolean =
+  private def skipProperty[D <: DObject](p: Property[D, ?]): Boolean =
     p._dataOperators.contains(Internal)
 
-  private def isRequired[D <: DObject](p: Property[D, _]): Boolean =
-    p.isInstanceOf[ExpectedProperty[D, _]] || p.isInstanceOf[ExpectedObjectProperty[D]] || p.isInstanceOf[MaybeExpectedProperty[D, _]]
+  private def isRequired[D <: DObject](p: Property[D, ?]): Boolean =
+    p.isInstanceOf[ExpectedProperty[D, ?]] || p.isInstanceOf[ExpectedObjectProperty[D]] || p.isInstanceOf[MaybeExpectedProperty[D, ?]]
 
   private def inheritFold[D <: DObject](
-    fields: Map[String, Property[D, _]],
+    fields: Map[String, Property[D, ?]],
     contract: BaseContract[D],
     inherits: Vector[ContractInfo],
     infos: Vector[ContractInfo],
@@ -218,10 +216,10 @@ object Definition {
     }
 
   private def findPropertyAnnotations[D <: DObject](
-    fields: Map[String, Property[D, _]],
+    fields: Map[String, Property[D, ?]],
     info: ContractInfo,
     nestedOverride: Boolean
-  ): Iterable[(String, Property[D, _], SchemaAnnotations)] =
+  ): Iterable[(String, Property[D, ?], SchemaAnnotations)] =
     fields.flatMap { case (key, value) =>
       val schema =
         if (nestedOverride || info.schemaAnnotations.nested)
@@ -236,7 +234,7 @@ object Definition {
     infos: Infos,
     defs: Definitions
   ): (Either[Boolean, TypeDefinition], Option[StringDefinition], Infos, Definitions) = {
-    def getPattern(c: DStringCodec[_]): Option[StringDefinition] = {
+    def getPattern(c: DStringCodec[?]): Option[StringDefinition] = {
       val s = c.typeDefinition
       if (s == StringDefinition.empty) None
       else Some(s)
